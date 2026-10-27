@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="zh-Hant" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>俄羅斯方塊 - Classic Tetris</title>
+    <meta name="description" content="使用原生 HTML、CSS 與 JavaScript 打造的經典俄羅斯方塊遊戲，具備流暢手感、SRS 踢牆旋轉、暫存方塊、連擊特效與音效支援。" />
+    <meta property="og:title" content="俄羅斯方塊 - Classic Tetris" />
+    <meta property="og:description" content="原生 JavaScript 經典俄羅斯方塊遊戲，支援鍵盤與觸控操作。" />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body class="bg-[#070a13] text-slate-100 min-h-screen select-none overflow-x-hidden flex flex-col font-sans">
+    
+    <!-- Top Navigation Bar -->
+    <header class="w-full border-b border-slate-800/80 bg-[#090e1c]/90 backdrop-blur px-4 sm:px-8 py-3 shrink-0 z-30">
+      <div class="max-w-5xl mx-auto flex items-center justify-between gap-4">
+        
+        <!-- Zone 1: Brand Title -->
+        <div class="flex items-center gap-3">
+          <div class="w-7 h-7 rounded bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-cyan-500/20 text-sm tracking-wider">
+            T
+          </div>
+          <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white font-display">
+            俄羅斯方塊 <span class="text-xs font-normal text-slate-400 font-mono tracking-normal ml-1">TETRIS</span>
+          </h1>
+        </div>
+
+        <!-- Zone 2: Navigation / Quick Actions -->
+        <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
+          <button id="btn-leaderboard" class="hover:text-cyan-400 transition-colors cursor-pointer flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            排行榜
+          </button>
+          <button id="btn-help" class="hover:text-cyan-400 transition-colors cursor-pointer flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            操作說明
+          </button>
+          <button id="btn-settings" class="hover:text-cyan-400 transition-colors cursor-pointer flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            遊戲設定
+          </button>
+        </nav>
+
+        <!-- Zone 3: Functional Buttons -->
+        <div class="flex items-center gap-2">
+          <!-- Audio Toggle -->
+          <button id="btn-mute" class="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer border border-slate-700/60" title="切換音效">
+            <svg class="w-5 h-5 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+          </button>
+          
+          <!-- Pause Button -->
+          <button id="btn-top-pause" class="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer border border-slate-700/60" title="暫停 (P)">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </button>
+
+          <!-- Restart Button -->
+          <button id="btn-top-restart" class="px-3 py-2 text-xs font-semibold rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white transition-all shadow-md shadow-cyan-600/30 cursor-pointer flex items-center gap-1.5 whitespace-nowrap">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span class="hidden sm:inline">重新開始</span>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- Main Game Container -->
+    <main class="flex-1 flex flex-col items-center justify-center p-3 sm:p-6 w-full max-w-5xl mx-auto">
+      
+      <!-- Mobile Quick Score Bar (visible on small screens) -->
+      <div class="flex lg:hidden items-center justify-between w-full max-w-[340px] mb-2 px-3 py-1.5 bg-slate-900/90 border border-slate-800 rounded-lg text-xs font-mono">
+        <div>
+          <span class="text-slate-400">分數:</span>
+          <span id="mobile-score-val" class="font-bold text-cyan-400">0</span>
+        </div>
+        <div>
+          <span class="text-slate-400">最高:</span>
+          <span id="mobile-high-val" class="font-bold text-amber-400">0</span>
+        </div>
+        <div>
+          <span class="text-slate-400">Lv:</span>
+          <span id="mobile-level-val" class="font-bold text-emerald-400">1</span>
+        </div>
+      </div>
+
+      <div class="flex flex-row items-start justify-center gap-3 sm:gap-6 w-full max-w-4xl">
+        
+        <!-- LEFT PANEL: HOLD & STATS -->
+        <aside class="flex flex-col gap-3 w-24 sm:w-36 shrink-0">
+          
+          <!-- Hold Box -->
+          <div class="card-arcade p-2 sm:p-3 flex flex-col items-center">
+            <div class="text-[11px] sm:text-xs font-bold text-slate-400 tracking-wider font-mono mb-1.5">
+              HOLD · 暫存
+            </div>
+            <div class="w-[84px] h-[70px] sm:w-[120px] sm:h-[100px] flex items-center justify-center bg-[#05070d] rounded border border-slate-800/80 overflow-hidden">
+              <canvas id="hold-canvas" width="120" height="100" class="max-w-full max-h-full"></canvas>
+            </div>
+            <div class="text-[10px] text-slate-500 font-mono mt-1 hidden sm:block">按 C 或 Shift</div>
+          </div>
+
+          <!-- Level & Lines Box -->
+          <div class="card-arcade p-2 sm:p-3 flex flex-col gap-2 font-mono text-center">
+            <div>
+              <div class="text-[11px] sm:text-xs font-semibold text-slate-400">等級 LEVEL</div>
+              <div id="level-val" class="text-lg sm:text-2xl font-bold text-emerald-400 tabular-nums">1</div>
+            </div>
+            <div class="h-[1px] bg-slate-800 w-full"></div>
+            <div>
+              <div class="text-[11px] sm:text-xs font-semibold text-slate-400">消除行數 LINES</div>
+              <div id="lines-val" class="text-base sm:text-xl font-bold text-cyan-400 tabular-nums">0</div>
+            </div>
+          </div>
+
+          <!-- Combo Indicator -->
+          <div id="combo-container" class="hidden card-arcade p-2 text-center border-amber-500/40 bg-amber-500/10">
+            <div class="text-[10px] font-bold text-amber-300 font-mono">COMBO!</div>
+            <div class="text-lg font-bold text-amber-400 font-mono">
+              x<span id="combo-val">0</span>
+            </div>
+          </div>
+
+          <!-- Desktop Key Reference -->
+          <div class="hidden lg:flex card-arcade p-2.5 flex-col gap-1 text-[11px] text-slate-400 font-mono">
+            <div class="text-[10px] font-bold text-slate-300 mb-0.5">鍵盤快速鍵</div>
+            <div class="flex justify-between"><span>← →</span><span class="text-slate-300">左右移動</span></div>
+            <div class="flex justify-between"><span>↑ / X</span><span class="text-slate-300">順時針轉</span></div>
+            <div class="flex justify-between"><span>Z</span><span class="text-slate-300">逆時針轉</span></div>
+            <div class="flex justify-between"><span>↓</span><span class="text-slate-300">緩降</span></div>
+            <div class="flex justify-between"><span>空白鍵</span><span class="text-slate-300">硬降直落</span></div>
+            <div class="flex justify-between"><span>C</span><span class="text-slate-300">暫存方塊</span></div>
+            <div class="flex justify-between"><span>P</span><span class="text-slate-300">暫停遊戲</span></div>
+          </div>
+
+        </aside>
+
+        <!-- CENTER PANEL: MAIN PLAYFIELD CANVAS -->
+        <section class="relative flex flex-col items-center">
+          
+          <!-- Outer Cabinet Frame with subtle neon outline -->
+          <div class="relative p-1.5 sm:p-2 bg-gradient-to-b from-slate-800 to-slate-950 rounded-xl shadow-2xl border border-slate-700/80">
+            
+            <div class="relative rounded-lg overflow-hidden bg-[#090d16] shadow-inner">
+              <canvas id="main-canvas" width="300" height="600" class="block w-[240px] h-[480px] sm:w-[300px] sm:h-[600px]"></canvas>
+
+              <!-- OVERLAY: START SCREEN -->
+              <div id="start-overlay" class="absolute inset-0 bg-[#090d16]/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-20">
+                <div class="w-16 h-16 mb-3 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center font-bold text-2xl text-white shadow-xl shadow-cyan-500/30">
+                  T
+                </div>
+                <h2 class="text-2xl font-bold tracking-tight text-white font-display mb-1">
+                  經典俄羅斯方塊
+                </h2>
+                <p class="text-xs text-slate-400 mb-6 max-w-[220px]">
+                  原生純 JavaScript 遊戲引擎，具備流暢手感與踢牆旋轉機制。
+                </p>
+                <button id="btn-start" class="btn-primary w-48 py-3 text-base cursor-pointer">
+                  開始遊戲 (Start)
+                </button>
+                <div class="mt-4 text-[11px] text-slate-500 font-mono">
+                  按 空白鍵 或 Enter 亦可開始
+                </div>
+              </div>
+
+              <!-- OVERLAY: PAUSE SCREEN -->
+              <div id="pause-overlay" class="hidden absolute inset-0 bg-[#090d16]/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-20">
+                <div class="text-3xl font-bold text-amber-400 font-display mb-2">
+                  遊戲暫停
+                </div>
+                <p class="text-xs text-slate-400 mb-6 font-mono">
+                  PAUSED
+                </p>
+                <div class="flex flex-col gap-2.5 w-44">
+                  <button id="btn-resume" class="btn-primary py-2.5 text-sm cursor-pointer">
+                    繼續遊戲 (P)
+                  </button>
+                  <button id="btn-restart" class="btn-secondary py-2 text-sm cursor-pointer">
+                    重新開始 (R)
+                  </button>
+                </div>
+              </div>
+
+              <!-- OVERLAY: GAME OVER SCREEN -->
+              <div id="game-over-overlay" class="hidden absolute inset-0 bg-[#090d16]/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-20">
+                <div class="text-rose-500 text-3xl font-bold font-display mb-1 tracking-wider">
+                  遊戲結束
+                </div>
+                <div class="text-xs text-slate-400 font-mono mb-4">GAME OVER</div>
+
+                <!-- Final Stats Card -->
+                <div class="w-full max-w-[240px] bg-slate-900/90 border border-slate-800 rounded-lg p-3 mb-5 font-mono">
+                  <div class="flex justify-between items-center py-1 text-xs">
+                    <span class="text-slate-400">最終得分</span>
+                    <span id="final-score" class="font-bold text-base text-cyan-400 tabular-nums">0</span>
+                  </div>
+                  <div class="flex justify-between items-center py-1 text-xs">
+                    <span class="text-slate-400">消除行數</span>
+                    <span id="final-lines" class="font-semibold text-slate-200 tabular-nums">0</span>
+                  </div>
+                  <div class="flex justify-between items-center py-1 text-xs">
+                    <span class="text-slate-400">達到等級</span>
+                    <span id="final-level" class="font-semibold text-slate-200 tabular-nums">1</span>
+                  </div>
+                </div>
+
+                <button id="btn-play-again" class="btn-primary w-48 py-3 text-base cursor-pointer">
+                  再玩一次 (Play Again)
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- RIGHT PANEL: NEXT & SCORE -->
+        <aside class="flex flex-col gap-3 w-24 sm:w-36 shrink-0">
+          
+          <!-- Next Queue Box -->
+          <div class="card-arcade p-2 sm:p-3 flex flex-col items-center">
+            <div class="text-[11px] sm:text-xs font-bold text-slate-400 tracking-wider font-mono mb-1.5">
+              NEXT · 下一個
+            </div>
+            <div class="w-[84px] h-[210px] sm:w-[120px] sm:h-[300px] flex items-center justify-center bg-[#05070d] rounded border border-slate-800/80 overflow-hidden">
+              <canvas id="next-canvas" width="120" height="300" class="max-w-full max-h-full"></canvas>
+            </div>
+          </div>
+
+          <!-- Score & High Score Box -->
+          <div class="card-arcade p-2 sm:p-3 flex flex-col gap-2 font-mono text-center">
+            <div>
+              <div class="text-[11px] sm:text-xs font-semibold text-slate-400">SCORE 分數</div>
+              <div id="score-val" class="text-base sm:text-xl font-bold text-white tabular-nums tracking-tight">0</div>
+            </div>
+            <div class="h-[1px] bg-slate-800 w-full"></div>
+            <div>
+              <div class="text-[11px] sm:text-xs font-semibold text-slate-400">HIGH 最高</div>
+              <div id="high-score-val" class="text-sm sm:text-base font-bold text-amber-400 tabular-nums tracking-tight">0</div>
+            </div>
+          </div>
+
+          <!-- Mobile Header shortcut buttons -->
+          <div class="flex md:hidden flex-col gap-2 mt-1">
+            <button id="btn-mobile-leaderboard" class="btn-secondary py-1.5 text-xs">
+              排行榜
+            </button>
+            <button id="btn-mobile-help" class="btn-secondary py-1.5 text-xs">
+              說明
+            </button>
+          </div>
+
+        </aside>
+
+      </div>
+
+      <!-- MOBILE TOUCH CONTROLLER (Visible on touch & mobile screens) -->
+      <section class="w-full max-w-sm mt-3 pt-2 border-t border-slate-800/70 sm:hidden flex flex-col gap-2">
+        <div class="grid grid-cols-5 gap-1.5">
+          <button id="touch-left" class="btn-touch">←</button>
+          <button id="touch-down" class="btn-touch">↓</button>
+          <button id="touch-right" class="btn-touch">→</button>
+          <button id="touch-rotate-ccw" class="btn-touch text-amber-300">↺</button>
+          <button id="touch-rotate-cw" class="btn-touch text-cyan-300">↻</button>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button id="touch-hold" class="btn-touch-action bg-slate-800 border-slate-700 text-slate-200">
+            HOLD (暫存)
+          </button>
+          <button id="touch-hard-drop" class="btn-touch-action bg-cyan-700/80 border-cyan-500/80 text-white font-bold">
+            直落 (DROP)
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- MODAL: HELP & INSTRUCTIONS -->
+    <div id="help-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 w-full max-w-md shadow-2xl">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <h3 class="text-base font-bold text-white font-display">俄羅斯方塊操作說明</h3>
+          <button id="btn-close-help" class="text-slate-400 hover:text-white p-1">✕</button>
+        </div>
+        <div class="py-4 text-xs space-y-3 font-mono text-slate-300">
+          <div>
+            <span class="text-cyan-400 font-bold">鍵盤控制：</span>
+            <ul class="mt-1 space-y-1 pl-3 list-disc text-slate-400">
+              <li><strong class="text-slate-200">← / → (或 A / D)</strong>：左右平移（長按具備滑順自動連續位移 DAS）</li>
+              <li><strong class="text-slate-200">↑ / W / X</strong>：順時針旋轉 90°（支援踢牆 SRS）</li>
+              <li><strong class="text-slate-200">Z / Ctrl</strong>：逆時針旋轉 90°</li>
+              <li><strong class="text-slate-200">↓ (或 S)</strong>：緩降加速（Soft Drop）</li>
+              <li><strong class="text-slate-200">空白鍵 (Space)</strong>：瞬間直落到底並鎖定（Hard Drop）</li>
+              <li><strong class="text-slate-200">C / Shift</strong>：暫存當前方塊（每回合限一次）</li>
+              <li><strong class="text-slate-200">P / Esc</strong>：暫停 / 繼續</li>
+              <li><strong class="text-slate-200">R</strong>：重新開始</li>
+            </ul>
+          </div>
+          <div>
+            <span class="text-cyan-400 font-bold">計分與等級：</span>
+            <ul class="mt-1 space-y-1 pl-3 list-disc text-slate-400">
+              <li>單行消除：100 × 等級</li>
+              <li>雙行消除：300 × 等級</li>
+              <li>三行消除：500 × 等級</li>
+              <li>四行消除 (TETRIS)：800 × 等級（連續達成有額外 1.5 倍 B2B 加乘）</li>
+              <li>連續消行 (Combo)：額外累積加分</li>
+              <li>每消除 10 行方塊將提升 1 等級，下落速度逐漸加快！</li>
+            </ul>
+          </div>
+        </div>
+        <div class="pt-2 text-right">
+          <button onclick="document.getElementById('help-modal').classList.add('hidden')" class="btn-primary py-1.5 px-4 text-xs">
+            了解
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: LEADERBOARD -->
+    <div id="leaderboard-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 w-full max-w-md shadow-2xl">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <h3 class="text-base font-bold text-white font-display">個人歷史高分榜</h3>
+          <button id="btn-close-leaderboard" class="text-slate-400 hover:text-white p-1">✕</button>
+        </div>
+        <div id="leaderboard-list" class="py-3 max-h-64 overflow-y-auto pr-1">
+          <!-- Dynamically populated -->
+        </div>
+        <div class="pt-3 border-t border-slate-800 flex justify-between items-center">
+          <button id="btn-clear-records" class="text-xs text-rose-400 hover:text-rose-300 underline cursor-pointer">
+            清除所有紀錄
+          </button>
+          <button onclick="document.getElementById('leaderboard-modal').classList.add('hidden')" class="btn-secondary py-1.5 px-4 text-xs">
+            關閉
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: SETTINGS -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 w-full max-w-sm shadow-2xl">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <h3 class="text-base font-bold text-white font-display">遊戲設定</h3>
+          <button id="btn-close-settings" class="text-slate-400 hover:text-white p-1">✕</button>
+        </div>
+        <div class="py-4 space-y-4 text-sm">
+          <label class="flex items-center justify-between cursor-pointer">
+            <span class="text-slate-200">音效播放</span>
+            <input type="checkbox" id="toggle-sound" checked class="w-4 h-4 accent-cyan-500 cursor-pointer" />
+          </label>
+          <label class="flex items-center justify-between cursor-pointer">
+            <span class="text-slate-200">顯示落點幽靈方塊 (Ghost)</span>
+            <input type="checkbox" id="toggle-ghost" checked class="w-4 h-4 accent-cyan-500 cursor-pointer" />
+          </label>
+          <label class="flex items-center justify-between cursor-pointer">
+            <span class="text-slate-200">顯示網格線 (Grid Lines)</span>
+            <input type="checkbox" id="toggle-grid" checked class="w-4 h-4 accent-cyan-500 cursor-pointer" />
+          </label>
+        </div>
+        <div class="pt-2 text-right">
+          <button onclick="document.getElementById('settings-modal').classList.add('hidden')" class="btn-primary py-1.5 px-4 text-xs">
+            完成
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Link to Native Vanilla JavaScript -->
+    <script type="module" src="/src/main.js"></script>
+
+    <!-- Mobile modal bridge script -->
+    <script>
+      const mLead = document.getElementById('btn-mobile-leaderboard');
+      const mHelp = document.getElementById('btn-mobile-help');
+      if (mLead) mLead.onclick = () => document.getElementById('btn-leaderboard').click();
+      if (mHelp) mHelp.onclick = () => document.getElementById('btn-help').click();
+
+      // Sync mobile score bar
+      const origScore = document.getElementById('score-val');
+      const origHigh = document.getElementById('high-score-val');
+      const origLevel = document.getElementById('level-val');
+      const mScore = document.getElementById('mobile-score-val');
+      const mHigh = document.getElementById('mobile-high-val');
+      const mLevel = document.getElementById('mobile-level-val');
+
+      if (origScore && mScore) {
+        const observer = new MutationObserver(() => {
+          mScore.textContent = origScore.textContent;
+          mHigh.textContent = origHigh.textContent;
+          mLevel.textContent = origLevel.textContent;
+        });
+        observer.observe(origScore, { childList: true, characterData: true, subtree: true });
+        observer.observe(origHigh, { childList: true, characterData: true, subtree: true });
+        observer.observe(origLevel, { childList: true, characterData: true, subtree: true });
+      }
+    </script>
+  </body>
+</html>

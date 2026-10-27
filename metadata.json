@@ -1,0 +1,6 @@
+{
+  "name": "俄羅斯方塊 (Classic Tetris)",
+  "description": "使用原生 HTML、CSS 與 JavaScript 打造的經典俄羅斯方塊遊戲，具備流暢手感、SRS 踢牆旋轉、暫存方塊、連擊特效與音效支援。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
